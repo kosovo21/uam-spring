@@ -28,6 +28,14 @@ class SecurityConfig(
                 auth
                     .requestMatchers("/auth/login").permitAll()
                     .requestMatchers(HttpMethod.POST, "/user").permitAll() // Allow POST /user (register) only
+                    // Swagger/OpenAPI endpoints
+                    .requestMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/api-docs/**",
+                        "/api-docs.yaml"
+                    ).permitAll()
                     .anyRequest().authenticated()
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
