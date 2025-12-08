@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -32,13 +33,21 @@ class JwtAuthFilter(
         try {
             val token = authHeader.substring(7)
             val email = jwtService.extractEmail(token)
+            val roles = jwtService.extractRoles(token)
 
             if (email != null && SecurityContextHolder.getContext().authentication == null) {
+                // Convert roles string to Spring Security authorities
+                val authorities = roles?.split(",")
+                    ?.map { it.trim() }
+                    ?.map { "ROLE_${it.uppercase()}" }
+                    ?.map { SimpleGrantedAuthority(it) }
+                    ?: emptyList()
+
                 val authentication = UsernamePasswordAuthenticationToken(
-                    email, null, emptyList()
+                    email, null, authorities
                 )
                 SecurityContextHolder.getContext().authentication = authentication
-                logger.debug("Authenticated user: $email")
+                logger.debug("Authenticated user: $email with roles: $roles")
             } else if (email == null) {
                 logger.warn("Failed to extract email from JWT token")
             }

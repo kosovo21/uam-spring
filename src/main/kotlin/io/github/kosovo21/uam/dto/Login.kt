@@ -15,7 +15,8 @@ data class LoginRequest(
 )
 
 data class LoginResponse(
-    val token: String
+    val token: String,
+    val refreshToken: String? = null
 )
 
 data class RegisterRequest(
@@ -33,4 +34,29 @@ data class UserResponse(
     val roles: String,
     val createdAt: String?,
     val updatedAt: String?
+)
+
+data class UpdateUserRequest(
+    @field:Email(message = "Email must be valid")
+    val email: String? = null,
+    
+    val roles: String? = null
+)
+
+data class ChangePasswordRequest(
+    @field:NotBlank(message = "Current password is required")
+    val currentPassword: String,
+    
+    @field:NotBlank(message = "New password is required")
+    @field:Size(min = 8, message = "New password must be at least 8 characters")
+    val newPassword: String
+)
+
+data class RefreshTokenRequest(
+    @field:NotBlank(message = "Token is required")
+    val token: String
+)
+
+data class RefreshTokenResponse(
+    val token: String
 )

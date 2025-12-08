@@ -3,6 +3,7 @@ package io.github.kosovo21.uam.exception
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -40,11 +41,25 @@ class GlobalExceptionHandler {
             .body(ErrorResponse(e.message ?: "User already exists", HttpStatus.CONFLICT.value()))
     }
 
+    @ExceptionHandler(InvalidTokenException::class)
+    fun handleInvalidToken(e: InvalidTokenException): ResponseEntity<ErrorResponse> {
+        logger.warn("Invalid token: ${e.message}")
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(e.message ?: "Invalid token", HttpStatus.UNAUTHORIZED.value()))
+    }
+
     @ExceptionHandler(BadCredentialsException::class)
     fun handleBadCredentials(e: BadCredentialsException): ResponseEntity<ErrorResponse> {
         logger.warn("Bad credentials: ${e.message}")
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ErrorResponse("Invalid credentials", HttpStatus.UNAUTHORIZED.value()))
+    }
+
+    @ExceptionHandler(AccessDeniedException::class)
+    fun handleAccessDenied(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
+        logger.warn("Access denied: ${e.message}")
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse("Access denied. Insufficient privileges.", HttpStatus.FORBIDDEN.value()))
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
